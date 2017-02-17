@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>url shortener</title>
+</head>
+<body>
+    <input id="url" placeholder="Adicione sua url aqui" required>
+    <input id="customAlias" placeholder="Alias customizado">
+    <button id="enviar">Enviar</button>
+    <br>
+    <textarea id="resultado" readonly placeholder="Resultado"></textarea>
+
+<script>
+    const url = document.querySelector('#url');
+    const custom_alias = document.querySelector('#customAlias');
+    const enviar = document.querySelector('#enviar');
+    const resultado = document.querySelector('#resultado');
+
+    enviar.addEventListener('click', () => {
+            const alias = custom_alias.value ? `&CUSTOM_ALIAS=${custom_alias.value}` : '';
+            fetch(`/create?url=${url.value}${alias}`, {method:'PUT'})
+                .then( res => res.json() )
+                .then( data => resultado.value = data.url ? data.url : `ERROR ${data.err_code}: ${data.description}`);
+    });
+</script>
+
+</body>
+</html>
