@@ -1,4 +1,3 @@
-const SortedArray = require('sorted-array');
 const Q = require('q');
 const logger = require('../servicos/logger.js');
 
@@ -10,7 +9,9 @@ class EncurtadorUrlDAO {
 
     adiciona(alias, url) {
         this._conexao.HSET(alias, 'shortUrl', url);
-        this._conexao.HSET(alias, 'contador', 0);
+        this._conexao.ZADD(['contador', 0, alias], function(err) {
+            if (err) { throw err }
+        });
     }
 
     busca(alias, callback) {
@@ -20,7 +21,9 @@ class EncurtadorUrlDAO {
                 throw new Error('Erro ao buscar url');
             }
             if (reply) {
-                this._conexao.HINCRBY(alias, 'contador', 1);
+                this._conexao.ZINCRBY(['contador', 1, alias], err => {
+                    if (err) { throw err }
+                });
                 callback(reply.shortUrl);
             } else {
                 callback(null);
@@ -40,17 +43,12 @@ class EncurtadorUrlDAO {
 
     retornaContagens() {
         const deferred = Q.defer();
-        let top = SortedArray.comparing( obj => -parseInt(obj.contador), []);
-        this._conexao.keys('*', (err, replies) => {
-            replies.forEach( (reply, idx) => {
-                this._conexao.HGETALL(reply , (err, ret) => {
-                    top.insert(ret);
-                    if(idx == replies.length - 1) {
-                        return deferred.resolve(top.array.slice(0, 10));
-                    }
-                });
-            });
+
+        this._conexao.ZREVRANGE(['contador', 0, 9, 'WITHSCORES'], (err, response) => {
+            if (err) { throw err }
+            deferred.resolve(response);
         });
+
         return deferred.promise;
     }
 

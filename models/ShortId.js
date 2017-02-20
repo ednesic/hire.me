@@ -5,7 +5,7 @@ class ShortId {
         let alias = '';
 
         for (let idx = 0; idx < 6; idx++) {
-            alias += alfabeto[Math.round(Math.random() * alfabeto.length)];
+            alias += alfabeto[Math.round(Math.random() * (alfabeto.length - 1))];
         }
 
         return alias;
@@ -17,7 +17,7 @@ module.exports = function () {
 };
 
 /*
-*
-* O Math.random já tabalha com o tempo atual para gerar um número aleatório
-*
+ *
+ * O Math.random já tabalha com o tempo atual para gerar um número aleatório
+ *
  */
